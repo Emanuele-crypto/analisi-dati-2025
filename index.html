@@ -1,0 +1,367 @@
+import React, { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+
+const DashboardProduzione = () => {
+  const [activeTab, setActiveTab] = useState('panoramica');
+
+  // Dati per la produzione mensile
+  const datiMensili = [
+    { name: 'Gennaio', produzione: 2596290, succo: 788000 },
+    { name: 'Febbraio', produzione: 2738030, succo: 862400 },
+    { name: 'Marzo', produzione: 3892950, succo: 1216810 },
+    { name: 'Aprile', produzione: 3785490, succo: 1226460 },
+    { name: 'Maggio', produzione: 985100, succo: 317800 }
+  ];
+
+  // Dati per la distribuzione per tipologia
+  const datiTipologia = [
+    { name: 'BIO', value: 9154430, perc: 65.40, color: '#4CAF50' },
+    { name: 'CONV', value: 4843430, perc: 34.60, color: '#2196F3' }
+  ];
+
+  // Dati per la distribuzione specifica dei tipi di frutta
+  const datiTipiFrutta = [
+    { name: 'BIO', value: 5758700, color: '#4CAF50' },
+    { name: 'CONV', value: 3843600, color: '#2196F3' },
+    { name: 'BIO NATURLAND', value: 951350, color: '#8BC34A' },
+    { name: 'CONV IGP', value: 967090, color: '#03A9F4' },
+    { name: 'BIO DEMETER', value: 951640, color: '#CDDC39' },
+    { name: 'Altri', value: 1525480, color: '#9E9E9E' }
+  ];
+
+  // Dati per l'efficienza per tipologia
+  const datiEfficienza = [
+    { name: 'BIO', efficienza: 31.98 },
+    { name: 'CONV', efficienza: 30.64 },
+    { name: 'BIO IGP', efficienza: 37.91 },
+    { name: 'BIO DEMETER', efficienza: 25.88 },
+    { name: 'CONV IGP', efficienza: 24.07 },
+    { name: 'BIO NATURLAND', efficienza: 28.01 }
+  ];
+
+  // Dati per l'efficienza delle linee di produzione
+  const datiLinee = [
+    { name: 'BOE', efficienza: 34.50, utilizzi: 18 },
+    { name: 'BOE/1100', efficienza: 32.39, utilizzi: 129 },
+    { name: 'BIRILLATRICI', efficienza: 31.31, utilizzi: 64 },
+    { name: 'GOE', efficienza: 29.75, utilizzi: 95 }
+  ];
+
+  // Dati per dettaglio tipologie di frutta
+  const datiDettaglioFrutta = [
+    { name: 'BIO', valore: 5758700 },
+    { name: 'CONV', valore: 3843600 },
+    { name: 'BIO NATURLAND', valore: 951350 },
+    { name: 'CONV IGP', valore: 967090 },
+    { name: 'BIO DEMETER', valore: 951640 },
+    { name: 'BIO IGP', valore: 527520 },
+    { name: 'BIO SPINAGALLO', valore: 300680 },
+    { name: 'BIO DEMETER (NTD)', valore: 188700 }
+  ];
+
+  // Funzione per formattare i numeri
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat('it-IT').format(num);
+  };
+
+  // Funzione per formattare i tooltip
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-300 shadow-md">
+          <p className="text-sm font-semibold">{`${label}`}</p>
+          {payload.map((entry, index) => (
+            <p key={`item-${index}`} style={{ color: entry.color || entry.fill }}>
+              {`${entry.name}: ${formatNumber(entry.value)} ${entry.unit || 'kg'}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const CustomTooltipPercent = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border border-gray-300 shadow-md">
+          <p className="text-sm font-semibold">{`${label}`}</p>
+          {payload.map((entry, index) => (
+            <p key={`item-${index}`} style={{ color: entry.color || entry.fill }}>
+              {`${entry.name}: ${entry.value.toFixed(2)}%`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const renderPieChart = (data) => {
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={120}
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, percent }) => `${name} (${(percent * 100).toFixed(1)}%)`}
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip formatter={(value) => formatNumber(value)} />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  };
+
+  return (
+    <div className="p-4 font-sans">
+      <h1 className="text-2xl font-bold mb-4 text-center">Analisi Dati di Produzione 2025</h1>
+      
+      <div className="mb-4">
+        <div className="flex border-b">
+          <button
+            className={`px-4 py-2 ${activeTab === 'panoramica' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('panoramica')}
+          >
+            Panoramica
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'tipologia' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('tipologia')}
+          >
+            Per Tipologia
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'efficienza' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('efficienza')}
+          >
+            Efficienza
+          </button>
+          <button
+            className={`px-4 py-2 ${activeTab === 'linee' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setActiveTab('linee')}
+          >
+            Linee Produzione
+          </button>
+        </div>
+      </div>
+      
+      {activeTab === 'panoramica' && (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Produzione Mensile 2025</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={datiMensili}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Bar name="Frutta Lavorata (kg)" dataKey="produzione" fill="#8884d8" />
+              <Bar name="Succo Prodotto (kg)" dataKey="succo" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
+          
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Ripartizione BIO vs CONV</h2>
+              {renderPieChart(datiTipologia)}
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Ripartizione per Tipo di Frutta</h2>
+              {renderPieChart(datiTipiFrutta)}
+            </div>
+          </div>
+          
+          <div className="mt-6 bg-gray-100 p-4 rounded-lg">
+            <h2 className="text-xl font-semibold mb-2">Statistiche di Produzione</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white p-4 rounded shadow">
+                <h3 className="text-lg font-semibold text-blue-600">Produzione Totale</h3>
+                <p className="text-2xl font-bold">{formatNumber(13997860)} kg</p>
+              </div>
+              <div className="bg-white p-4 rounded shadow">
+                <h3 className="text-lg font-semibold text-green-600">Succo Totale</h3>
+                <p className="text-2xl font-bold">{formatNumber(4411470)} kg</p>
+              </div>
+              <div className="bg-white p-4 rounded shadow">
+                <h3 className="text-lg font-semibold text-purple-600">Efficienza Media</h3>
+                <p className="text-2xl font-bold">31.52%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {activeTab === 'tipologia' && (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Produzione per Tipologia di Frutta</h2>
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={datiDettaglioFrutta}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Bar name="Quantità (kg)" dataKey="valore" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+          
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded shadow">
+              <h3 className="text-lg font-semibold text-blue-600">Principali Dati per Tipo</h3>
+              <table className="w-full mt-2 border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border p-2 text-left">Tipo</th>
+                    <th className="border p-2 text-right">Quantità (kg)</th>
+                    <th className="border p-2 text-right">% sul Totale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border p-2">BIO</td>
+                    <td className="border p-2 text-right">{formatNumber(5758700)}</td>
+                    <td className="border p-2 text-right">41.14%</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2">CONV</td>
+                    <td className="border p-2 text-right">{formatNumber(3843600)}</td>
+                    <td className="border p-2 text-right">27.46%</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2">CONV IGP</td>
+                    <td className="border p-2 text-right">{formatNumber(967090)}</td>
+                    <td className="border p-2 text-right">6.91%</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2">BIO NATURLAND</td>
+                    <td className="border p-2 text-right">{formatNumber(951350)}</td>
+                    <td className="border p-2 text-right">6.80%</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2">BIO DEMETER</td>
+                    <td className="border p-2 text-right">{formatNumber(951640)}</td>
+                    <td className="border p-2 text-right">6.80%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-white p-4 rounded shadow">
+              <h3 className="text-lg font-semibold text-blue-600">Distribuzione Mensile di Tipologie</h3>
+              <p className="mt-2 text-gray-600">
+                La produzione è stata maggiormente concentrata nei mesi di marzo e aprile, che rappresentano insieme oltre il 53% della produzione totale. La frutta BIO rappresenta circa il 65% della produzione totale, mentre la CONV circa il 35%.
+              </p>
+              <p className="mt-2 text-gray-600">
+                Le certificazioni speciali come BIO NATURLAND, BIO DEMETER e CONV IGP rappresentano ciascuna circa il 6-7% della produzione totale.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {activeTab === 'efficienza' && (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Efficienza per Tipologia di Frutta</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={datiEfficienza}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis domain={[0, 40]} />
+              <Tooltip content={<CustomTooltipPercent />} />
+              <Legend />
+              <Bar name="Efficienza (%)" dataKey="efficienza" fill="#4CAF50" />
+            </BarChart>
+          </ResponsiveContainer>
+          
+          <div className="mt-6 bg-white p-4 rounded shadow">
+            <h3 className="text-lg font-semibold text-blue-600">Analisi dell'Efficienza</h3>
+            <p className="mt-2 text-gray-600">
+              L'efficienza media di estrazione del succo è del 31.52%. La tipologia BIO IGP mostra l'efficienza più alta con il 37.91%, seguita dalla frutta BIO standard con il 31.98%. La frutta CONV IGP presenta l'efficienza più bassa con il 24.07%.
+            </p>
+            <p className="mt-2 text-gray-600">
+              In generale, la frutta BIO mostra un'efficienza leggermente superiore rispetto alla CONV (31.98% vs 30.64%), il che potrebbe suggerire differenze nella qualità o nella maturazione della frutta.
+            </p>
+          </div>
+        </div>
+      )}
+      
+      {activeTab === 'linee' && (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Efficienza per Linea di Produzione</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={datiLinee}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis domain={[0, 40]} />
+              <Tooltip content={<CustomTooltipPercent />} />
+              <Legend />
+              <Bar name="Efficienza (%)" dataKey="efficienza" fill="#2196F3" />
+            </BarChart>
+          </ResponsiveContainer>
+          
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded shadow">
+              <h3 className="text-lg font-semibold text-blue-600">Dettaglio Linee di Produzione</h3>
+              <table className="w-full mt-2 border-collapse">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border p-2 text-left">Linea</th>
+                    <th className="border p-2 text-right">Quantità Lavorata (kg)</th>
+                    <th className="border p-2 text-right">Efficienza (%)</th>
+                    <th className="border p-2 text-right">Utilizzi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border p-2">BOE/1100</td>
+                    <td className="border p-2 text-right">{formatNumber(6172160)}</td>
+                    <td className="border p-2 text-right">32.39%</td>
+                    <td className="border p-2 text-right">129</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2">GOE</td>
+                    <td className="border p-2 text-right">{formatNumber(4063380)}</td>
+                    <td className="border p-2 text-right">29.75%</td>
+                    <td className="border p-2 text-right">95</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2">BIRILLATRICI</td>
+                    <td className="border p-2 text-right">{formatNumber(2974160)}</td>
+                    <td className="border p-2 text-right">31.31%</td>
+                    <td className="border p-2 text-right">64</td>
+                  </tr>
+                  <tr>
+                    <td className="border p-2">BOE</td>
+                    <td className="border p-2 text-right">{formatNumber(788160)}</td>
+                    <td className="border p-2 text-right">34.50%</td>
+                    <td className="border p-2 text-right">18</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="bg-white p-4 rounded shadow">
+              <h3 className="text-lg font-semibold text-blue-600">Analisi delle Linee di Produzione</h3>
+              <p className="mt-2 text-gray-600">
+                La linea BOE/1100 è la più utilizzata, con 129 utilizzi e oltre 6 milioni di kg di frutta lavorata. La linea BOE mostra l'efficienza più alta (34.50%), mentre la linea GOE ha l'efficienza più bassa (29.75%).
+              </p>
+              <p className="mt-2 text-gray-600">
+                Si osserva una correlazione tra il tipo di linea e l'efficienza di estrazione del succo, con le linee BOE che mostrano prestazioni superiori rispetto alle altre.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DashboardProduzione;
